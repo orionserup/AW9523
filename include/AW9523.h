@@ -20,6 +20,7 @@
 // ----------------------------------------------- Global Defines ------------------------------------------------ //
 
 #define AW9523_BASE_ADDR  0x58   ///< AW9523 default address, the actual address is determined based on pin tying
+#define AW9523_MAX_LED    0xF    ///< There are 16 LEDs, 0 - 15 (0 - F)
 
 // ------------------------------------------------ Register Defintions ------------------------------------------- //
 
@@ -157,120 +158,122 @@ void AW9523Deinit(AW9523* const dev);
 /**
  * @brief Sets the global confiuaration register of the device
  * 
- * @param[in] dev 
- * @param[in] port0_od 
- * @param[in] max_current 
- * @return uint8_t 
+ * @param[in] dev: Device to configure 
+ * @param[in] port0_od: If Port 0 is configured as open drain for gpio
+ * @param[in] max_current: The Maximum current for each LED
+ * @return uint8_t: The Status, 0 if error
  */
 uint8_t AW9523SetConfig(const AW9523* const dev, const bool port0_od, const AW9523Current max_current);
 
 // ------------------------------------------------ Pin Mode Configuration ----------------------------------------------- //
 
 /**
- * @brief 
+ * @brief Sets the Pin Mode to be input or output, the pin must be in gpio mode for this to have an effect
  * 
- * @param dev 
- * @param port 
- * @param input_mask 
- * @return uint8_t 
+ * @param[in] dev: Device to write the mode for 
+ * @param[in] port: Port to set the pin mode for 
+ * @param[in] input_mask: Which pins are to be inputs, the other are outputs, its a bitmask
+ * @return uint8_t: Status, 0 if there was an error 
  */
 uint8_t AW9523SetGPIOPinMode(const AW9523* const dev, const AW9523Port port, const uint8_t input_mask);
 
 /**
- * @brief 
+ * @brief Sets the Pin Mode for a Port, chooses between GPIO Mode and LED Mode
  * 
- * @param dev 
- * @param port 
- * @param gpio_mask 
- * @return uint8_t 
+ * @param[in] dev: Device to set the pin mode for 
+ * @param[in] port: Port to set the Pin Mode for 
+ * @param[in] gpio_mask: Which pins to set as GPIOs, its a bit mask 
+ * @return uint8_t: 
  */
 uint8_t AW9523SetPinMode(const AW9523* const dev, const AW9523Port port, const uint8_t gpio_mask);
 
-// ------------------------------------------------------------- Basic Helper Functions ------------------------------------------------- //
+// ----------------------------------------- Basic Helper Functions ------------------------------------------------- //
 
 /**
- * @brief 
+ * @brief Resets the device using a software reset functionality
  * 
- * @param dev 
- * @return uint8_t 
+ * @param[in] dev: Device to reset 
+ * @return uint8_t: Status, 0 if there was an error 
  */
 uint8_t AW9523Reset(const AW9523* const dev);
 
+// ---------------------------------------------- Interrupt Functions -------------------------------------------- //
+
 /**
- * @brief 
+ * @brief Enables or Disables interrupts for each port
  * 
- * @param dev 
- * @param port 
- * @param is_enabled 
- * @return uint8_t 
+ * @param[in] dev: Device to Set Interrupt state 
+ * @param[in] port: Port to En/Dis Interrupt for 
+ * @param[in] is_enabled: If the Port interrupt is enabled 
+ * @return uint8_t: Status, 0 if there was an error 
  */
 uint8_t AW9523SetIntState(const AW9523* const dev, const AW9523Port port, const bool is_not_enabled);
 
 // ----------------------------------------------- GPIO State Functions -------------------------------------------- //
 
 /**
- * @brief 
+ * @brief Sets the GPIO Output, pins must be in gpio output mode for it to do anything
  * 
- * @param dev 
- * @param port 
- * @param output_mask 
- * @return uint8_t 
+ * @param[in] dev: Device to Set the Output for
+ * @param[in] port: Port to set the output for 
+ * @param[in] output_mask: Which pins to set high, the rest are set low 
+ * @return uint8_t: Status, 0 if there was an error 
  */
 uint8_t AW9523SetGPIOOutput(const AW9523* const dev, const AW9523Port port, const uint8_t output_mask);
 
 /**
- * @brief 
+ * @brief Gets the GPIO Input state from a port, pins must be configured as GPIO input for this to work
  * 
- * @param dev 
- * @param port 
- * @return uint8_t 
+ * @param[in] dev: Device to read from 
+ * @param[in] port: Port to Write to 
+ * @return uint8_t: The input values from the port 
  */
 uint8_t AW9523GetGPIOInput(const AW9523* const dev, const AW9523Port port);
 
 // ------------------------------------------- LED Value Setting ----------------------------------------- //
 
 /**
- * @brief 
+ * @brief Sets the PWM Value for an individual LED
  * 
- * @param dev 
- * @param led 
- * @param current_pwm 
- * @return uint8_t 
+ * @param[in] dev: Device to set the PWM value on 
+ * @param[in] led: LED to set current for, use @ref AW9523Pin for pinmapping and reference 
+ * @param[in] current_pwm: The PWM Current value, 0 = 0 mA 255 = Imax,  Imax is set with the global config  
+ * @return uint8_t: Status, 0 if there was an error 
  */
 uint8_t AW9523SetLEDCurrent(const AW9523* const dev, const uint8_t led, const uint8_t current_pwm);
 
 /**
- * @brief 
+ * @brief Sets A Series of LEDs current value
  * 
- * @param dev 
- * @param led_start 
- * @param led_end 
- * @param values 
- * @return uint8_t 
+ * @param[in] dev: Device to set the PWM values for
+ * @param[in] led_start: LED to start with 
+ * @param[in] led_end: Last LED in the sequence 
+ * @param[in] values: PWM values for the LED sequence 
+ * @return uint8_t: Status, 0 if there was an error 
  */
 uint8_t AW9523SetLEDsCurrent(const AW9523* const dev, const uint8_t led_start, const uint8_t led_end, const uint8_t* const values);
 
-// ---------------------------------------------------- Low Level API ----------------------------------------------- //
+// ------------------------------------------- Low Level API ----------------------------------------------- //
 
 /**
- * @brief 
+ * @brief Writes to a register on the device
  * 
- * @param dev 
- * @param reg 
- * @param data 
- * @param size 
- * @return uint8_t 
+ * @param[in] dev: Device to write to, must be inited 
+ * @param[in] reg: Register to start to write to  
+ * @param[in] data: Data to write to the register(s) 
+ * @param[in] size: How many bytes to write 
+ * @return uint8_t: Status, 0 if there was an error 
  */
 uint8_t AW9523Write(const AW9523* const dev, const AW9523Register reg, const void* const data, const uint8_t size);
 
 /**
- * @brief 
+ * @brief Reads from a Register on the device
  * 
- * @param dev 
- * @param reg 
- * @param buffer 
- * @param size 
- * @return uint8_t 
+ * @param[in] dev: Device to read from 
+ * @param[in] reg: Register to start reading from 
+ * @param[in] buffer: Buffer to read into 
+ * @param[in] size: How many bytes to read 
+ * @return uint8_t: Status, 0 if there was an error
  */
 uint8_t AW9523Read(const AW9523* const dev, const AW9523Register reg, void* const buffer, const uint8_t size);
 
