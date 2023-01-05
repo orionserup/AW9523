@@ -1,6 +1,15 @@
+/**
+ * @file AW9523.c
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-01-04
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 
 #include "AW9523.h"
-
 #include <stddef.h>
 
 AW9523* AW9523Init(AW9523* const dev, const AW9523HAL* const hal, const bool ad0, const bool ad1) {
@@ -38,7 +47,7 @@ uint8_t AW9523SetPinMode(const AW9523* const dev, const AW9523Port port, const u
 
 }
 
-uint8_t AW9523Reset(const AW9523* const dev) { AW9523Write(dev, AW9523_REG_RST, "\0", 1); }
+uint8_t AW9523Reset(const AW9523* const dev) { return AW9523Write(dev, AW9523_REG_RST, "\0", 1); }
 
 uint8_t AW9523SetIntState(const AW9523* const dev, const AW9523Port port, const bool is_not_enabled) {
 
